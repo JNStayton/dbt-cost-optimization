@@ -602,7 +602,7 @@ When multiple environments have the same recommendation for the same logical mod
 
 ### Leaving out dev deployments
 
-Many teams never clean up dev schemas, and seeing those costs can be useful, so by default nothing is excluded. Two variables leave dev deployments out of the recommendation backlog, the gold views and environment counts:
+Many teams never clean up dev schemas, and seeing those costs can be useful, so by default nothing is excluded. Two variables leave dev deployments out of the recommendation backlog, the gold views and `deployed_relation_count`:
 
 **`dbt_excluded_schemas`** (default `[]`): schema name patterns (`LIKE`, case-insensitive), e.g. `['DBT_%']` for personal dev schemas. Usually the most reliable option, since target names don't always separate dev from prod.
 

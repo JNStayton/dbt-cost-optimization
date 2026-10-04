@@ -46,7 +46,7 @@ First public release: one package with a shared design across Snowflake, Databri
 - Spillage effects are measured. Scale-ups (savings null) show `estimated_annual_hours_saved` and `estimated_annual_cost_change_usd` from the spilling runtime and the scaling efficiency of the step up (`warehouse_scale_up_efficiency`, from the Snowflake Summit benchmark), and the reason text states the trade. SQL refactors are priced from the time spilling operators were blocked on disk, read from `GET_QUERY_OPERATOR_STATS` by a new post-hook (`extract_spill_evidence`, into `int_snowflake__query_spill_evidence`) and scaled from the sample to all spilling queries.
 - Spillage cost is measured: the runtime of each table's spilling queries (`spilling_execution_s`, attributed through `ACCESS_HISTORY`, which also picks the table's warehouse) at the warehouse's list rate. The aggregate warehouse recommendation uses all of the warehouse's spilling queries. Spillage savings are null rather than estimated from invented per-GB constants, so the savings floor no longer demotes spillage scale-ups.
 - Spillage recommendations reach the gold layer by tier (`recommendation_key`), not by matching recommendation text. Heavy local spill on X-Large and larger warehouses is a separate `spillage_sql_refactor` signal (effort `sql_refactor`), and moderate spill is `monitor`. The priority hierarchy is defined once, so a signal's rank is the same in every gold view.
-- Environment counts are per deployment (physical table): a table built under several target names counts once, and recommendations aren't repeated for it.
+- Deployments are counted per physical table (`deployed_relation_count`): a table built under several target names counts once, and recommendations aren't repeated for it.
 - Tolerates non-dbt query traffic: query comments and session metadata that aren't valid JSON are treated as non-dbt activity instead of failing the build.
 - Clustering operator evidence skips queries on warehouses the package's role can't monitor, instead of failing the build, and logs a per-table coverage summary. Grant `MONITOR` on those warehouses for full coverage (see the Snowflake permissions docs).
 
@@ -64,5 +64,5 @@ First public release: one package with a shared design across Snowflake, Databri
 - Table materialization, incremental materialization, and incremental config recommendations.
 - VACUUM and ANALYZE candidates.
 
-[Unreleased]: https://github.com/dbt-labs/dbt-cost-optimization/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/dbt-labs/dbt-cost-optimization/releases/tag/v1.0.0
+[Unreleased]: https://github.com/dbt-labs/dbt-cost-optimization/compare/1.0.0...HEAD
+[1.0.0]: https://github.com/dbt-labs/dbt-cost-optimization/releases/tag/1.0.0

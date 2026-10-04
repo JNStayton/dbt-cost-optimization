@@ -26,7 +26,7 @@
 
   is_excluded: the dbt_excluded_schemas / dbt_excluded_targets vars (see
   relation_is_excluded). Excluded deployments are left out of recommendations and
-  environment counts.
+  deployed_relation_count.
 --#}
 
 {% set lookback_days = var('dbt_relation_history_lookback_days', 90) %}
