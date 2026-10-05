@@ -10,27 +10,20 @@ layers, so this board does not generalize to them as-is.
 
 ## Setup
 
-1. Install dbt-charts (requires Python <3.14; `dbt-charts>=0.8.0`, since
-   `ref()` resolution inside board queries is broken before that version):
+1. Install dbt-charts (requires Python <3.14; `dbt-charts>=0.8.0`:
 
    ```bash
    pip install "dbt-charts[snowflake]"
    ```
 
 2. Build this package's models, from your project root. Select the whole
-   package (`package:dbt_cost_optimization`), not just `tag:gold` -
-   the gold views are tagged `gold`, but the fact tables they read from
-   (clustering, materialization, warehouse, AI spend) each carry their own
-   domain tag instead. Selecting the whole package builds everything this
-   package can produce in one pass, rather than relying on `+tag:gold`'s
-   ancestor selection to pull in exactly the right set:
+   package (`package:dbt_cost_optimization`):
 
    ```bash
    dbt build --vars '{dbt_cost_optimization_enabled: true}' --select package:dbt_cost_optimization
    ```
 
-3. Set your dbt profile name as an environment variable, once, in your
-   shell profile or CI env (the same profile you already use for `dbt build`):
+3. Set your dbt profile name as an environment variable:
 
    ```bash
    export DBT_COST_OPT_PROFILE=<your dbt profile name>
