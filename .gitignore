@@ -40,8 +40,31 @@ integration_tests/.user.yml
 
 dbt_internal_packages/
 
+archived/
+
+.claude/
+.snowflake/
+
+.dbtignore
+
 # Local test seeds (not for committing)
 seeds/
 
 # Internal planning / spec docs (kept locally, not tracked)
 docs/superpowers/
+
+macro-dispatch-refactor-plan.md
+merge-conflict-resolution-plan-pr14.md
+v2-first-v1-later.md
+skill-planning.md
+clustering-evidence-coverage-plan.md
+spillage-cost-plan.md
+refinements-build-plan.md
+clustering-evidence-coverage-plan.md
+
+# Internal dev tooling (kept locally, not tracked)
+CLAUDE.md
+.mcp.json
+claude-chat.txt
+# Docs site build output (mkdocs build)
+site/

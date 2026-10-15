@@ -82,14 +82,14 @@ An `incremental` model instead processes only rows that are new or changed since
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `incremental_candidates_lookback_days` | `7` | Number of days of run history to analyze. |
+| `incremental_candidates_lookback_days` | `60` | Number of days of run history to analyze. |
 | `incremental_candidates_min_avg_bytes_scanned_gb` | `0.1` | Minimum average bytes scanned per run (in GB) to flag as a candidate. Models below this threshold are too small to benefit meaningfully from incremental conversion. |
 | `incremental_candidates_min_run_count` | `3` | Minimum number of runs within the lookback window required to flag as a candidate. Requires enough runs to establish a reliable pattern. |
 
 ### Example configuration
 
 ```yaml
-# dbt_project.yml
+# vars.yml
 vars:
   # Widen the analysis window
   incremental_candidates_lookback_days: 14

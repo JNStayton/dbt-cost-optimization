@@ -104,4 +104,4 @@ When you add a new model in this package, decide its materialization in this ord
 
 ## Open questions / not yet resolved
 
-- **Exact retention for `sys_query_history` and `sys_query_detail`.** AWS publishes 7 days for `SYS_SERVERLESS_USAGE` and the legacy STL views, but no explicit number for the query SYS views. Until AWS clarifies, the package assumes ≥7-day retention, and the lookback variables (`materialization_lookback_days`, `incremental_lookback_days`) should be tuned to the customer's observed retention.
+- **Exact retention for `sys_query_history` and `sys_query_detail`.** AWS publishes 7 days for `SYS_SERVERLESS_USAGE` and the legacy STL views, but no explicit number for the query SYS views. Until AWS clarifies, the package assumes ≥7-day retention, and the lookback variables (`table_materialization_lookback_days`, `incremental_candidates_lookback_days`) should be tuned to the customer's observed retention.

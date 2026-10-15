@@ -12,7 +12,7 @@ stg_bigquery__columns
   → int_bigquery__column_query_access  (when use_query_text_attribution = true)
        → int_bigquery__column_query_stats
 fct_bigquery__table_clustering_candidates
-  → post-hook: refresh_bigquery_column_cardinality()
+  → post-hook: refresh_column_cardinality()
        → int_bigquery__column_cardinality
 fct_bigquery__clustering_key_candidates
 ```
@@ -65,7 +65,7 @@ flagged `is_recommended = true` (BigQuery's max clustering columns).
 
 **Cardinality (`cardinality_pct`)** — `(distinct_values / total_rows) × 100`. Distinct
 counts come from `APPROX_COUNT_DISTINCT` populated by the
-`refresh_bigquery_column_cardinality` macro running as a post-hook on Stage 1. The macro
+`refresh_column_cardinality` macro running as a post-hook on Stage 1. The macro
 only scans the top N candidate tables, and pre-filters columns to only those that
 actually appear in queries (cost discipline). Medium cardinality (~0.1–10%) is the
 sweet spot — selective enough to prune partitions, not so unique that each value gets
@@ -108,7 +108,7 @@ tiebreaker, capped at four columns per table.
 | `clustering_key_cardinality_table_limit` | `10` | Max number of candidate tables for which APPROX_COUNT_DISTINCT is computed each run. |
 | `use_query_text_attribution` | `true` | When `false`, disables the heuristic column-access pipeline. `usage_count` becomes 0 and ranking falls back to cardinality only. |
 
-Override via `dbt_project.yml`:
+Override in a `vars.yml` file in your project root (or with `--vars`):
 
 ```yaml
 vars:

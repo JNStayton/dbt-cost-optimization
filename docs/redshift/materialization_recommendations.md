@@ -84,7 +84,7 @@ Both terms are independent and additive. `downstream_build_time_s` already accou
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `materialization_lookback_days` | `7` | Lookback window for query history |
+| `table_materialization_lookback_days` | `14` | Lookback window for query history (shared with Snowflake and Databricks) |
 | `table_materialization_min_query_count` | `10` | Minimum queries to appear in results |
 | `table_materialization_min_composite_score` | `50` | Minimum score to recommend materialization |
 
@@ -94,7 +94,7 @@ Both terms are independent and additive. `downstream_build_time_s` already accou
 
 ### Purpose
 
-Identifies dbt models materialized as `table` that are candidates for conversion to `incremental` materialization, based on rebuild cost, table size, and rebuild redundancy. Excludes this package's own models (`package_name = 'dbt_cost_optimization_package'`) so the package never recommends converting its own intermediates.
+Identifies dbt models materialized as `table` that are candidates for conversion to `incremental` materialization, based on rebuild cost, table size, and rebuild redundancy. Excludes this package's own models (`package_name = 'dbt_cost_optimization'`) so the package never recommends converting its own intermediates.
 
 ### Scoring
 
