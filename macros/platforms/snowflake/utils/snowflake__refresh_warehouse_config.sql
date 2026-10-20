@@ -17,7 +17,7 @@
 
   {% if execute and target.type == 'snowflake' %}
 
-    {% set is_enterprise = var('snowflake_enterprise_edition', true) %}
+    {% set is_enterprise = dbt_cost_optimization.cost_optimization_setting('snowflake_enterprise_edition', true) %}
     {% set config_table = ref('int_snowflake__warehouse_config') %}
 
     {{ log("refresh_warehouse_config: running SHOW WAREHOUSES...", info=true) }}

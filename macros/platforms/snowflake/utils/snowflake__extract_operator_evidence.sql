@@ -25,7 +25,7 @@
 
   {% if execute and target.type == 'snowflake' %}
 
-    {% set is_enterprise = var('snowflake_enterprise_edition', true) %}
+    {% set is_enterprise = dbt_cost_optimization.cost_optimization_setting('snowflake_enterprise_edition', true) %}
     {% set table_limit = var('clustering_key_operator_analysis_table_limit', 10) %}
     {% set queries_per_table = var('clustering_key_operator_queries_per_table', 20) %}
 

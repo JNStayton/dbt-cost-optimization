@@ -31,7 +31,7 @@
 
     {% set cardinality_limit = var('clustering_key_cardinality_table_limit', 10) %}
     {% set lookback_days = var('clustering_candidates_lookback_days', 7) %}
-    {% set is_enterprise = var('snowflake_enterprise_edition', true) %}
+    {% set is_enterprise = dbt_cost_optimization.cost_optimization_setting('snowflake_enterprise_edition', true) %}
 
     {# Resolve table references once #}
     {% set candidates_table = ref('fct_snowflake__table_clustering_candidates') %}
