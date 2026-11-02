@@ -4,18 +4,25 @@ All notable changes to this package are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this package follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+This is the changelog for the **dbt v1** release line (`1.x.x`, from the `main-v1` branch). The dbt v2 line (`2.x.x`) is on the `main` branch. A MINOR version number means the same features on both lines: `1.N` and `2.N` match.
+
 ## [Unreleased]
 
 ## [1.0.0] - Unreleased
 
-First public release: one package with a shared design across Snowflake, Databricks, BigQuery, and Redshift.
+First public release for dbt v1: one package with a shared design across Snowflake, Databricks, BigQuery, and Redshift. It has the same features as `2.0.0`, the dbt v2 release.
+
+### dbt v1 differences from 2.0.0
+- Requires dbt-core 1.10 or later (`require-dbt-version: [">=1.10.0", "<2.0.0"]`).
+- The settings that switch models on and off are environment variables, because a package's `dbt_project.yml` can't read your project's vars on dbt v1: `DBT_COST_OPTIMIZATION_ENABLED`, `DBT_COST_OPTIMIZATION_SNOWFLAKE_ENTERPRISE_EDITION`, `DBT_COST_OPTIMIZATION_AI_REST_API_ENABLED`, and `DBT_COST_OPTIMIZATION_USE_QUERY_TEXT_ATTRIBUTION`. Models and macros read the same settings through `cost_optimization_setting()`, so the two always agree.
+- Every other var is set in your project's `dbt_project.yml` `vars:` section or with `--vars`, as literal values. dbt v1 doesn't read `vars.yml` or render Jinja in var values.
+- `-- depends_on` hints on `fct_snowflake__table_clustering_candidates` for the models its post-hooks read, and the Snowflake post-hook macros refer to their own model as `this`: dbt v1 doesn't see `ref()` calls inside post-hook macros.
 
 ### Added
 
 #### Package design (all platforms)
-- Requires dbt v2 (`require-dbt-version: [">=2.0.0"]`). dbt v1 support is planned.
 - Platform-first layout: each platform's models live in `models/<platform>/` (staging, intermediate, marts), and cross-platform models live in `models/shared/`.
-- Opt-in by default: package models only build when `dbt_cost_optimization_enabled: true`, and only the models for your data platform are enabled.
+- Opt-in by default: package models only build when `DBT_COST_OPTIMIZATION_ENABLED=true`, and only the models for your data platform are enabled.
 - Macros behind `adapter.dispatch`: each command and utility keeps one public name and runs the right implementation for your data platform, or raises a clear "not yet implemented" error where one doesn't exist yet. Implementations live in `macros/platforms/<platform>/`, and `macros/_macros.yml` documents every macro's arguments and which platforms implement it.
 - Domain tags on marts for scheduled jobs (`+tag:clustering`, `+tag:materialization`, `+tag:warehouse`, `+tag:ai_spend`, `+tag:gold`), plus `dbt_cost_optimization` on every mart. On Snowflake, the intermediate models that feed only the gold views are tagged `gold` too, so `tag:gold` (no `+`) refreshes the dashboards from the last domain builds.
 - Package vars grouped into package-wide, shared, and per-platform sections in `dbt_project.yml`. Override them in a `vars.yml` file in your project root or with `--vars`.
@@ -64,5 +71,5 @@ First public release: one package with a shared design across Snowflake, Databri
 - Table materialization, incremental materialization, and incremental config recommendations.
 - VACUUM and ANALYZE candidates.
 
-[Unreleased]: https://github.com/dbt-labs/dbt-cost-optimization/compare/1.0.0...HEAD
+[Unreleased]: https://github.com/dbt-labs/dbt-cost-optimization/compare/1.0.0...main-v1
 [1.0.0]: https://github.com/dbt-labs/dbt-cost-optimization/releases/tag/1.0.0

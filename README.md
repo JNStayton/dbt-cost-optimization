@@ -1,5 +1,7 @@
 # dbt Cost Optimization Package
 
+> **This is the dbt v1 version of the package** (dbt-core 1.10 and later, `1.x.x` releases). Running dbt v2 (the dbt Fusion engine)? Use the [`main`](https://github.com/dbt-labs/dbt-cost-optimization/tree/main) branch and the `2.x.x` releases instead.
+
 A dbt package that analyzes your data platform's compute, storage, and query patterns to identify optimization opportunities and produce actionable recommendations.
 
 ## Supported platforms
@@ -70,14 +72,14 @@ See each platform's docs for model details and configuration.
 
 ## Installation
 
-Requires dbt v2 (the dbt Fusion engine). dbt v1 support is planned; on dbt v1, `dbt deps` installs the package but the next command stops with a version error.
+Requires dbt v1: dbt-core 1.10 or later.
 
 Add to your `packages.yml`:
 
 ```yaml
 packages:
-  - git: "https://github.com/dbt-labs/dbt-cost-optimization.git"
-    revision: main
+  - package: dbt-labs/dbt_cost_optimization
+    version: [">=1.0.0", "<2.0.0"]
 ```
 
 Then run:
@@ -86,7 +88,7 @@ Then run:
 dbt deps
 ```
 
-Installation from the dbt package hub (`package:` / `version:`) is coming soon.
+The `<2.0.0` bound matters: `2.x.x` releases are for dbt v2 and don't run on dbt v1.
 
 ## Getting started
 
@@ -99,19 +101,38 @@ After installation, see your platform's documentation for required permissions, 
 
 ## Configuration
 
-The package is **opt-in**. Package models only build when `dbt_cost_optimization_enabled` is `true`.
+The package is **opt-in**: its models only build where you turn it on.
 
-To customize the package's behavior, create a `vars.yml` file in your project root:
+### Turn the package on with an environment variable
 
-```yaml
-# vars.yml
-vars:
-  dbt_cost_optimization_enabled: true
+On dbt v1, a package's `dbt_project.yml` can't read your project's vars, so the settings that switch models on and off are environment variables. Set them only in the environments or jobs that should build the package (your shell, CI, or a dbt platform environment or job):
+
+| Environment variable | Default | Set it when |
+|---|---|---|
+| `DBT_COST_OPTIMIZATION_ENABLED` | `false` | Always, to build the package: `true` |
+| `DBT_COST_OPTIMIZATION_SNOWFLAKE_ENTERPRISE_EDITION` | `true` | You're on Snowflake Standard edition: `false` |
+| `DBT_COST_OPTIMIZATION_AI_REST_API_ENABLED` | `true` | You want to leave Cortex REST API usage (billed in dollars, not credits) out of the AI analysis: `false` |
+| `DBT_COST_OPTIMIZATION_USE_QUERY_TEXT_ATTRIBUTION` | `true` | BigQuery only, to turn off query-text column attribution: `false` |
+
+```bash
+export DBT_COST_OPTIMIZATION_ENABLED=true
+dbt build --select package:dbt_cost_optimization
 ```
 
-Or pass vars on the command line with `--vars '{var_name: value}'`. Overriding package vars in your own `dbt_project.yml` `vars:` section is not supported.
+After you change one of these variables, run the next command once with `--no-partial-parse`, so dbt re-reads the package's configuration.
 
-Every other var has a default. For the full list, see your platform's documentation or the `vars:` section of [dbt_project.yml](dbt_project.yml), which groups them into shared and per-platform sections.
+### Every other var
+
+Set the package's other vars (lookback windows, thresholds, `credit_rate_usd`, scope settings) in your project's `dbt_project.yml` `vars:` section, or with `--vars`:
+
+```yaml
+# dbt_project.yml
+vars:
+  credit_rate_usd: 3
+  dbt_excluded_schemas: ['DBT_CLOUD_PR_%']
+```
+
+On dbt v1, var values must be literals: dbt v1 doesn't render Jinja (such as `"{{ target.database }}"`) in `vars:` values. Every var has a default. For the full list, see your platform's documentation or the `vars:` section of [dbt_project.yml](dbt_project.yml), which groups them into shared and per-platform sections.
 
 ## How it works
 
@@ -124,18 +145,18 @@ After installation:
 
 To build package models, explicitly opt in.
 
-**Recommended: dedicated scheduled jobs** (no changes to existing jobs required)
+**Recommended: dedicated scheduled jobs** (no changes to existing jobs required). Set `DBT_COST_OPTIMIZATION_ENABLED=true` on those jobs only, for example as a job-level environment variable in the dbt platform:
 ```bash
 # All package models
-dbt build --vars '{dbt_cost_optimization_enabled: true}' --select package:dbt_cost_optimization
+dbt build --select package:dbt_cost_optimization
 
 # Or select by optimization domain
-dbt build --vars '{dbt_cost_optimization_enabled: true}' --select +tag:clustering
+dbt build --select +tag:clustering
 ```
 
-**Alternative: enable in your `vars.yml`** (models build on every run)
+**Alternative: enable it for a whole environment** (models build on every run)
 
-If you set `dbt_cost_optimization_enabled: true` in your `vars.yml`, you will need to explicitly exclude package models from general runs where they are not desired.
+If you set `DBT_COST_OPTIMIZATION_ENABLED=true` for an environment, every run there builds the package, so exclude package models from the runs where you don't want them (for example `--exclude package:dbt_cost_optimization`).
 
 Either way, this avoids unexpectedly querying large platform system tables (such as Snowflake's `ACCOUNT_USAGE` views) on every regular dbt build. Only the models for your data platform are enabled.
 
@@ -162,7 +183,7 @@ Every package mart also has the `dbt_cost_optimization` tag. Some Snowflake mode
 
 Graph-dependent recommendations require the dbt project graph. Warehouse and expensive query signals use Snowflake query_history, which provides account-wide visibility scoped to warehouses the project uses.
 
-To leave dev deployments out of the Snowflake recommendations, set `dbt_excluded_schemas` (schema patterns, e.g. `['DBT_%']`) or `dbt_excluded_targets` (e.g. `['dev']`) in your `vars.yml`. By default nothing is excluded.
+To leave dev deployments out of the Snowflake recommendations, set `dbt_excluded_schemas` (schema patterns, e.g. `['DBT_%']`) or `dbt_excluded_targets` (e.g. `['dev']`) in your `dbt_project.yml` `vars:` section. By default nothing is excluded.
 
 On Databricks, BigQuery, and Redshift, recommendations are scoped to your project's dbt models by default. See each platform's docs for the scope settings.
 

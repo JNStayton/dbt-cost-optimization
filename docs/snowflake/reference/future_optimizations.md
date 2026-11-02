@@ -39,8 +39,7 @@ Items below are validated as valuable but deferred from the initial release. Ord
 - `upgrade_gen2` — enable Gen2 resource constraint
 
 ### Version compatibility testing
-- Validate package behavior on dbt-core (non-Fusion) environments
-- Identify Jinja/SQL differences between engines
+- Done for dbt v1: the `1.x.x` releases (this branch) run on dbt-core 1.10 and later, and pass the same test suites as the dbt v2 releases.
 
 ### Package release prep
 - CHANGELOG generation
