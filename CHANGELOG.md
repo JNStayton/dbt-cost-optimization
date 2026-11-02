@@ -13,7 +13,7 @@ First public release: one package with a shared design across Snowflake, Databri
 ### dbt v1 and dbt v2 support
 - `require-dbt-version: [">=1.10.0", "<3.0.0"]`.
 - The settings that switch models on and off are environment variables that work the same on dbt v1 and dbt v2: `DBT_COST_OPTIMIZATION_ENABLED`, `DBT_COST_OPTIMIZATION_SNOWFLAKE_ENTERPRISE_EDITION`, `DBT_COST_OPTIMIZATION_AI_REST_API_ENABLED`, and `DBT_COST_OPTIMIZATION_USE_QUERY_TEXT_ATTRIBUTION`. On dbt v1, dbt-core renders an installed package's `dbt_project.yml` without your project's vars, so a var can't switch models on there. On dbt v2, the matching vars also work in `vars.yml` or with `--vars`. Models and macros read the same settings through `cost_optimization_setting()`, so the two always agree.
-- Every other var works on both: your `dbt_project.yml` `vars:` section, `--vars`, or `vars.yml` (dbt v2 and dbt-core 1.12 and later). On dbt v1, var values must be literals.
+- Every other var works on both: your `dbt_project.yml` `vars:` section, `--vars`, or `vars.yml` (dbt v2 and dbt-core 1.12 and later; dbt-core 1.10 and 1.11 don't read `vars.yml`, so use the `vars:` section or `--vars`). On dbt v1, var values must be literals.
 - `-- depends_on` hints on `fct_snowflake__table_clustering_candidates` for the models its post-hooks read, and the Snowflake post-hook macros refer to their own model as `this`: dbt v1 doesn't see `ref()` calls inside post-hook macros.
 
 ### Added

@@ -130,6 +130,8 @@ vars:
   dbt_excluded_schemas: ['DBT_CLOUD_PR_%']
 ```
 
+> **`vars.yml` needs dbt v2 or dbt-core 1.12 and later.** On dbt-core 1.10 and 1.11, `vars.yml` isn't read: set vars in your `dbt_project.yml` `vars:` section or with `--vars`.
+
 On dbt v1, var values must be literals: dbt v1 doesn't render Jinja (such as `"{{ target.database }}"`) in `vars:` values. Every var has a default. For the full list, see your platform's documentation or the `vars:` section of [dbt_project.yml](dbt_project.yml), which groups them into shared and per-platform sections.
 
 ## How it works

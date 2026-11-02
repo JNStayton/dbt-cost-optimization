@@ -296,7 +296,7 @@ Why environment variables: on dbt v1, dbt-core renders an installed package's `d
 **Every other variable** can be overridden in any of these ways:
 
 - In your project's `dbt_project.yml` `vars:` section
-- In a `vars.yml` file in your project root (dbt v2 and dbt-core 1.12 and later)
+- In a `vars.yml` file in your project root (dbt v2 and dbt-core 1.12 and later; on dbt-core 1.10 and 1.11, `vars.yml` isn't read, so use the `vars:` section or `--vars`)
 - Via CLI: `--vars '{var_name: value}'`
 
 On dbt v1, var values must be literals: dbt v1 doesn't render Jinja (such as `"{{ target.database }}"`) in `vars:` values.
