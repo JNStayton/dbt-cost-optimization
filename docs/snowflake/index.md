@@ -154,7 +154,7 @@ When these views are unavailable (Standard edition), the package gracefully fall
 - Spillage recommendations produce no rows (with an explanatory message)
 - Query-to-table attribution falls back to `query_text ILIKE` matching
 
-Set `snowflake_enterprise_edition: false` in your `vars.yml` (or with `--vars`) if you're on Standard edition.
+If you're on Standard edition, set `snowflake_enterprise_edition: false` (in `vars.yml` or with `--vars`, on dbt v2) or the environment variable `DBT_COST_OPTIMIZATION_SNOWFLAKE_ENTERPRISE_EDITION=false` (dbt v1 or v2). See [Configuration](#configuration).
 
 ### ACCOUNT_USAGE Latency
 
@@ -195,24 +195,22 @@ dbt deps
 
 Persistent package models are **disabled by default** so they do not run on your project's normal `dbt run` or `dbt build`. Macros are always available regardless.
 
-To build package models, explicitly opt in:
+To build package models, explicitly opt in: set `dbt_cost_optimization_enabled: true` (in `vars.yml` or with `--vars`, on dbt v2), or the environment variable `DBT_COST_OPTIMIZATION_ENABLED=true` (dbt v1 or v2). On dbt v1, use the environment variable: dbt-core renders an installed package's `dbt_project.yml` without your project's vars.
 
-**Recommended: dedicated scheduled jobs** (no changes to existing jobs required)
+**Recommended: dedicated scheduled jobs** (no changes to existing jobs required). Turn the package on for those jobs only, for example with `DBT_COST_OPTIMIZATION_ENABLED=true` as a job-level environment variable in the dbt platform (or `--vars '{dbt_cost_optimization_enabled: true}'` on dbt v2):
 ```bash
 # All package models
-dbt build --vars '{dbt_cost_optimization_enabled: true}' --select package:dbt_cost_optimization
+dbt build --select package:dbt_cost_optimization
 
 # Or select by optimization domain
-dbt build --vars '{dbt_cost_optimization_enabled: true}' --select +tag:warehouse
+dbt build --select +tag:warehouse
 ```
 
-**Alternative: enable at the project level** (builds on every dbt run)
-```yaml
-# In a vars.yml file in your project root
-vars:
-  dbt_cost_optimization_enabled: true
-```
-Note: if enabled at the project level, you will need to explicitly exclude package models from general runs where they are not desired.
+**Alternative: enable it for a whole environment** (builds on every dbt run)
+
+Set `DBT_COST_OPTIMIZATION_ENABLED=true` for the environment (or `dbt_cost_optimization_enabled: true` in `vars.yml` on dbt v2). Every run there then builds the package, so exclude package models from the runs where you don't want them (for example `--exclude package:dbt_cost_optimization`).
+
+On dbt v1, after you change one of the package's environment variables, run the next command once with `--no-partial-parse`, so dbt re-reads the package's configuration.
 
 ### Suggested cadences
 
@@ -225,15 +223,15 @@ Note: if enabled at the project level, you will need to explicitly exclude packa
 
 Example dedicated weekly job:
 ```bash
-dbt build --vars '{dbt_cost_optimization_enabled: true}' --select +tag:warehouse +tag:ai_spend
+dbt build --select +tag:warehouse +tag:ai_spend
 ```
 
 Example dedicated monthly job:
 ```bash
-dbt build --vars '{dbt_cost_optimization_enabled: true}' --select +tag:clustering +tag:materialization
+dbt build --select +tag:clustering +tag:materialization
 ```
 
-The `+` prefix ensures upstream staging/intermediate dependencies are included.
+Each job runs with the package turned on (`DBT_COST_OPTIMIZATION_ENABLED=true`, or `--vars '{dbt_cost_optimization_enabled: true}'` on dbt v2). The `+` prefix ensures upstream staging/intermediate dependencies are included.
 
 **What each job also runs.** Some models measure your account with post-hooks, so the cadence affects how much they see:
 
@@ -246,7 +244,7 @@ The `+` prefix ensures upstream staging/intermediate dependencies are included.
 Cross-domain results (the gold views, job-level spillage, view chain evidence) are computed when the gold layer builds. The gold tag also covers the three intermediate models that feed only the gold views, so run it without the `+` after each domain job to refresh the dashboards from what the domain jobs last built:
 
 ```bash
-dbt build --vars '{dbt_cost_optimization_enabled: true}' --select tag:gold
+dbt build --select tag:gold
 ```
 
 `+tag:gold` builds everything upstream of it, including every domain above, so on its own it's a full run of the package. Use it for the first build.
@@ -283,19 +281,29 @@ dbt run-operation suggest_clustering_keys --args '{model_name: my_model}'
 
 ## Configuration
 
-All package variables can be overridden in any of the following ways:
+**Settings that switch models on and off** each have a var and an environment variable. On dbt v2, set either (the var in `vars.yml` or with `--vars`). **On dbt v1, use the environment variable:** dbt-core renders an installed package's `dbt_project.yml` without your project's vars. Set them only where the package should build:
 
-- In a `vars.yml` file in your project root
+| Var (dbt v2) | Environment variable (dbt v1 or v2) | Default | Set it when |
+|---|---|---|---|
+| `dbt_cost_optimization_enabled` | `DBT_COST_OPTIMIZATION_ENABLED` | `false` | Always, to build the package: `true` |
+| `snowflake_enterprise_edition` | `DBT_COST_OPTIMIZATION_SNOWFLAKE_ENTERPRISE_EDITION` | `true` | You're on Standard edition: `false` |
+| `ai_rest_api_enabled` | `DBT_COST_OPTIMIZATION_AI_REST_API_ENABLED` | `true` | You want to leave Cortex REST API usage (billed in dollars) out of the AI analysis: `false` |
+
+On dbt v1, after you change one, run the next command once with `--no-partial-parse`.
+
+**Every other variable** can be overridden in any of these ways:
+
+- In your project's `dbt_project.yml` `vars:` section
+- In a `vars.yml` file in your project root (dbt v2 and dbt-core 1.12 and later)
 - Via CLI: `--vars '{var_name: value}'`
-- In a deployment job command
 
-Note: overriding package vars in your `dbt_project.yml` `vars:` section is **not supported** due to parse-order limitations with package `+enabled` configs.
+On dbt v1, var values must be literals: dbt v1 doesn't render Jinja (such as `"{{ target.database }}"`) in `vars:` values.
 
 ### Edition and shared settings
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `snowflake_enterprise_edition` | `true` | Set to `false` for Standard edition. Controls ACCESS_HISTORY availability and multi-cluster recommendations. |
+| `snowflake_enterprise_edition` | `true` | Set to `false` for Standard edition, as the environment variable `DBT_COST_OPTIMIZATION_SNOWFLAKE_ENTERPRISE_EDITION` (see above). Controls ACCESS_HISTORY availability and multi-cluster recommendations. |
 | `table_query_stats_full_account` | `false` | When `true`, collects query stats for ALL tables in the account. When `false`, only dbt models in the current project. |
 
 ### Table clustering
@@ -364,7 +372,7 @@ Note: overriding package vars in your `dbt_project.yml` `vars:` section is **not
 | `ai_user_concentration_threshold_pct` | `50` | % of total spend from one user that triggers concentration alert. |
 | `ai_min_credits_for_recommendation` | `1` | Min credits for a model to produce recommendations. |
 | `ai_min_queries_for_recommendation` | `10` | Min queries for a model to produce recommendations. |
-| `ai_rest_api_enabled` | `true` | Set to `false` to exclude REST API (dollar-billed) from AI analysis. |
+| `ai_rest_api_enabled` | `true` | Set to `false` to exclude REST API (dollar-billed) from AI analysis, as the environment variable `DBT_COST_OPTIMIZATION_AI_REST_API_ENABLED` (see above). |
 
 ### Cross-environment model discovery
 
@@ -377,9 +385,17 @@ Note: overriding package vars in your `dbt_project.yml` `vars:` section is **not
 
 ### Example: Standard edition configuration
 
+Set the environment variables where the package runs:
+
+```bash
+export DBT_COST_OPTIMIZATION_ENABLED=true
+export DBT_COST_OPTIMIZATION_SNOWFLAKE_ENTERPRISE_EDITION=false
+```
+
+And the rest in your `dbt_project.yml`:
+
 ```yaml
 vars:
-  snowflake_enterprise_edition: false
   clustering_candidates_min_size_gb: 1    # Lower for testing
   warehouse_sizing_lookback_days: 14
   credit_rate_usd: 3.5    # Your contract rate
