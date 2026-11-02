@@ -12,7 +12,7 @@ First public release: one package with a shared design across Snowflake, Databri
 
 ### dbt v1 and dbt v2 support
 - `require-dbt-version: [">=1.10.0", "<3.0.0"]`.
-- The settings that switch models on and off (`dbt_cost_optimization_enabled`, `snowflake_enterprise_edition`, `ai_rest_api_enabled`, `use_query_text_attribution`) can each be set as a var or as an environment variable (`DBT_COST_OPTIMIZATION_<NAME>`). On dbt v1, use the environment variable: dbt-core renders an installed package's `dbt_project.yml` without your project's vars. Models and macros read the same settings through `cost_optimization_setting()`, so the two always agree.
+- The settings that switch models on and off are environment variables that work the same on dbt v1 and dbt v2: `DBT_COST_OPTIMIZATION_ENABLED`, `DBT_COST_OPTIMIZATION_SNOWFLAKE_ENTERPRISE_EDITION`, `DBT_COST_OPTIMIZATION_AI_REST_API_ENABLED`, and `DBT_COST_OPTIMIZATION_USE_QUERY_TEXT_ATTRIBUTION`. On dbt v1, dbt-core renders an installed package's `dbt_project.yml` without your project's vars, so a var can't switch models on there. On dbt v2, the matching vars also work in `vars.yml` or with `--vars`. Models and macros read the same settings through `cost_optimization_setting()`, so the two always agree.
 - Every other var works on both: your `dbt_project.yml` `vars:` section, `--vars`, or `vars.yml` (dbt v2 and dbt-core 1.12 and later). On dbt v1, var values must be literals.
 - `-- depends_on` hints on `fct_snowflake__table_clustering_candidates` for the models its post-hooks read, and the Snowflake post-hook macros refer to their own model as `this`: dbt v1 doesn't see `ref()` calls inside post-hook macros.
 
@@ -23,7 +23,7 @@ First public release: one package with a shared design across Snowflake, Databri
 - Opt-in by default: package models only build when `dbt_cost_optimization_enabled` is true (or `DBT_COST_OPTIMIZATION_ENABLED=true`), and only the models for your data platform are enabled.
 - Macros behind `adapter.dispatch`: each command and utility keeps one public name and runs the right implementation for your data platform, or raises a clear "not yet implemented" error where one doesn't exist yet. Implementations live in `macros/platforms/<platform>/`, and `macros/_macros.yml` documents every macro's arguments and which platforms implement it.
 - Domain tags on marts for scheduled jobs (`+tag:clustering`, `+tag:materialization`, `+tag:warehouse`, `+tag:ai_spend`, `+tag:gold`), plus `dbt_cost_optimization` on every mart. On Snowflake, the intermediate models that feed only the gold views are tagged `gold` too, so `tag:gold` (no `+`) refreshes the dashboards from the last domain builds.
-- Package vars grouped into package-wide, shared, and per-platform sections in `dbt_project.yml`. Override them in a `vars.yml` file in your project root or with `--vars`.
+- Package vars grouped into package-wide, shared, and per-platform sections in `dbt_project.yml`. Override them in your `dbt_project.yml` `vars:` section, a `vars.yml` file in your project root (dbt v2 and dbt-core 1.12 and later), or with `--vars`.
 - Shared dbt graph models: `int_dbt__relations` (models) and `int_dbt__snapshots` (snapshots).
 
 #### Snowflake (GA)

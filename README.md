@@ -97,28 +97,18 @@ After installation, see your platform's documentation for required permissions, 
 
 ## Configuration
 
-The package is **opt-in**: its models only build where you turn it on, with `dbt_cost_optimization_enabled`.
+The package is **opt-in**: its models only build where you turn it on.
 
-### Turn the package on
+### Turn the package on with environment variables
 
-**On dbt v2**, set the var in a `vars.yml` file in your project root, or pass it with `--vars`:
+The settings that switch the package's models on and off are environment variables. They work the same on dbt v1 and dbt v2, so nothing changes when a project moves from one to the other. Set them only in the environments or jobs that should build the package (your shell, CI, or a dbt platform environment or job):
 
-```yaml
-# vars.yml
-vars:
-  dbt_cost_optimization_enabled: true
-```
-
-**On dbt v1**, use the environment variable `DBT_COST_OPTIMIZATION_ENABLED=true` instead: dbt-core renders an installed package's `dbt_project.yml` without your project's vars, so a var can't switch the package's models on there. The environment variables also work on dbt v2, so a project that uses them keeps working when it moves from dbt v1 to dbt v2.
-
-The settings that switch models on and off each have a var and an environment variable. On dbt v1, use the environment variable. Set it only in the environments or jobs that should build the package (your shell, CI, or a dbt platform environment or job):
-
-| Var (dbt v2) | Environment variable (dbt v1 or v2) | Default | Set it when |
-|---|---|---|---|
-| `dbt_cost_optimization_enabled` | `DBT_COST_OPTIMIZATION_ENABLED` | `false` | Always, to build the package: `true` |
-| `snowflake_enterprise_edition` | `DBT_COST_OPTIMIZATION_SNOWFLAKE_ENTERPRISE_EDITION` | `true` | You're on Snowflake Standard edition: `false` |
-| `ai_rest_api_enabled` | `DBT_COST_OPTIMIZATION_AI_REST_API_ENABLED` | `true` | You want to leave Cortex REST API usage (billed in dollars, not credits) out of the AI analysis: `false` |
-| `use_query_text_attribution` | `DBT_COST_OPTIMIZATION_USE_QUERY_TEXT_ATTRIBUTION` | `true` | BigQuery only, to turn off query-text column attribution: `false` |
+| Environment variable | Default | Set it when |
+|---|---|---|
+| `DBT_COST_OPTIMIZATION_ENABLED` | `false` | Always, to build the package: `true` |
+| `DBT_COST_OPTIMIZATION_SNOWFLAKE_ENTERPRISE_EDITION` | `true` | You're on Snowflake Standard edition: `false` |
+| `DBT_COST_OPTIMIZATION_AI_REST_API_ENABLED` | `true` | You want to leave Cortex REST API usage (billed in dollars, not credits) out of the AI analysis: `false` |
+| `DBT_COST_OPTIMIZATION_USE_QUERY_TEXT_ATTRIBUTION` | `true` | BigQuery only, to turn off query-text column attribution: `false` |
 
 ```bash
 export DBT_COST_OPTIMIZATION_ENABLED=true
@@ -127,9 +117,11 @@ dbt build --select package:dbt_cost_optimization
 
 On dbt v1, after you change one of these environment variables, run the next command once with `--no-partial-parse`, so dbt re-reads the package's configuration.
 
+> **Why environment variables?** On dbt v1, dbt-core renders an installed package's `dbt_project.yml` without your project's vars, so a var can't switch the package's models on there. On dbt v2, the vars (`dbt_cost_optimization_enabled`, `snowflake_enterprise_edition`, `ai_rest_api_enabled`, `use_query_text_attribution`) also work, set in `vars.yml` or with `--vars`, but not in your `dbt_project.yml` `vars:` section. Use one or the other for each setting, not both.
+
 ### Every other var
 
-Set the package's other vars (lookback windows, thresholds, `credit_rate_usd`, scope settings) in your project's `dbt_project.yml` `vars:` section, or with `--vars`. On dbt v2 and dbt-core 1.12 and later, a `vars.yml` file in your project root works too:
+Set the package's other vars (lookback windows, thresholds, `credit_rate_usd`, scope settings) in your project's `dbt_project.yml` `vars:` section, in a `vars.yml` file in your project root (dbt v2, and dbt-core 1.12 and later), or with `--vars`:
 
 ```yaml
 # dbt_project.yml
@@ -151,12 +143,9 @@ After installation:
 
 To build package models, explicitly opt in.
 
-**Recommended: dedicated scheduled jobs** (no changes to existing jobs required). Turn the package on for those jobs only: with `--vars` on dbt v2, or with `DBT_COST_OPTIMIZATION_ENABLED=true` as a job-level environment variable (dbt v1 or v2):
+**Recommended: dedicated scheduled jobs** (no changes to existing jobs required). Set `DBT_COST_OPTIMIZATION_ENABLED=true` on those jobs only, for example as a job-level environment variable in the dbt platform:
 ```bash
-# All package models (dbt v2)
-dbt build --vars '{dbt_cost_optimization_enabled: true}' --select package:dbt_cost_optimization
-
-# All package models (dbt v1 or v2, with DBT_COST_OPTIMIZATION_ENABLED=true set on the job)
+# All package models
 dbt build --select package:dbt_cost_optimization
 
 # Or select by optimization domain
@@ -165,7 +154,7 @@ dbt build --select +tag:clustering
 
 **Alternative: enable it for a whole environment** (models build on every run)
 
-If you set `dbt_cost_optimization_enabled: true` in `vars.yml`, or `DBT_COST_OPTIMIZATION_ENABLED=true` for an environment, every run there builds the package, so exclude package models from the runs where you don't want them (for example `--exclude package:dbt_cost_optimization`).
+If you set `DBT_COST_OPTIMIZATION_ENABLED=true` for an environment, every run there builds the package, so exclude package models from the runs where you don't want them (for example `--exclude package:dbt_cost_optimization`).
 
 Either way, this avoids unexpectedly querying large platform system tables (such as Snowflake's `ACCOUNT_USAGE` views) on every regular dbt build. Only the models for your data platform are enabled.
 
