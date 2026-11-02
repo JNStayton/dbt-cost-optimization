@@ -4,16 +4,18 @@ All notable changes to this package are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this package follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+This is the changelog for the **dbt v2** release line (`2.x.x`, from the `main` branch). The dbt v1 line (`1.x.x`) is on the `main-v1` branch. A MINOR version number means the same features on both lines: `2.N` and `1.N` match.
+
 ## [Unreleased]
 
-## [1.0.0] - Unreleased
+## [2.0.0] - Unreleased
 
-First public release: one package with a shared design across Snowflake, Databricks, BigQuery, and Redshift.
+First public release for dbt v2: one package with a shared design across Snowflake, Databricks, BigQuery, and Redshift. `1.0.0`, from the `main-v1` branch, has the same features for dbt v1.
 
 ### Added
 
 #### Package design (all platforms)
-- Requires dbt v2 (`require-dbt-version: [">=2.0.0"]`). dbt v1 support is planned.
+- Requires dbt v2 (`require-dbt-version: [">=2.0.0", "<3.0.0"]`). For dbt v1, use the `1.x.x` releases from the `main-v1` branch.
 - Platform-first layout: each platform's models live in `models/<platform>/` (staging, intermediate, marts), and cross-platform models live in `models/shared/`.
 - Opt-in by default: package models only build when `dbt_cost_optimization_enabled: true`, and only the models for your data platform are enabled.
 - Macros behind `adapter.dispatch`: each command and utility keeps one public name and runs the right implementation for your data platform, or raises a clear "not yet implemented" error where one doesn't exist yet. Implementations live in `macros/platforms/<platform>/`, and `macros/_macros.yml` documents every macro's arguments and which platforms implement it.
@@ -64,5 +66,5 @@ First public release: one package with a shared design across Snowflake, Databri
 - Table materialization, incremental materialization, and incremental config recommendations.
 - VACUUM and ANALYZE candidates.
 
-[Unreleased]: https://github.com/dbt-labs/dbt-cost-optimization/compare/1.0.0...HEAD
-[1.0.0]: https://github.com/dbt-labs/dbt-cost-optimization/releases/tag/1.0.0
+[Unreleased]: https://github.com/dbt-labs/dbt-cost-optimization/compare/2.0.0...main
+[2.0.0]: https://github.com/dbt-labs/dbt-cost-optimization/releases/tag/2.0.0
