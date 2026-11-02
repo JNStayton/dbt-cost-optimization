@@ -1,5 +1,5 @@
 name: 'dbt_cost_optimization'
-version: '1.0.0'
+version: '2.0.0'
 config-version: 2
 
 profile: 'dbt_cost_optimization'
@@ -12,7 +12,7 @@ clean-targets:
   - "dbt_packages"
   - "logs"
 
-require-dbt-version: [">=2.0.0"]
+require-dbt-version: [">=2.0.0", "<3.0.0"]
 
 # Model configurations
 models:

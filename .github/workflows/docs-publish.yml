@@ -5,7 +5,7 @@ name: Publish docs
 #   - push to main         → the "main" version (unreleased docs)
 #   - release published    → an "X.Y" version from the tag, with an alias for its dbt line:
 #       releases from main            → "latest" (the dbt v2 line; the site's default)
-#       releases from DBT_V1_BRANCH   → "dbt-v1" (the dbt v1 line)
+#       releases from DBT_V1_BRANCH   → "v1" (the dbt v1 line)
 # Only runs once the repo is public, so nothing is published before the public release.
 on:
   push:
@@ -30,7 +30,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  DBT_V1_BRANCH: dbt-v1
+  DBT_V1_BRANCH: main-v1
 
 jobs:
   publish:
@@ -71,7 +71,7 @@ jobs:
           VERSION="${TAG#v}"
           MAJOR_MINOR="$(echo "$VERSION" | cut -d. -f1-2)"
           if [ "$TARGET" = "$DBT_V1_BRANCH" ]; then
-            mike deploy --push --update-aliases --message "Deploy docs for release $TAG" "$MAJOR_MINOR" dbt-v1
+            mike deploy --push --update-aliases --message "Deploy docs for release $TAG" "$MAJOR_MINOR" v1
           else
             mike deploy --push --update-aliases --message "Deploy docs for release $TAG" "$MAJOR_MINOR" latest
             mike set-default --push latest

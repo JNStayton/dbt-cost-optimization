@@ -2,7 +2,7 @@
 
 How this package is tested, how to run the tests, and what the results should look like.
 
-**Scope today:** Snowflake, on dbt v2. The Databricks, BigQuery, and Redshift models are in beta and have their own data tests. Their unit tests, and dbt v1 support, are planned.
+**Scope today:** Snowflake, on dbt v2 (this branch, `main`). The same suites run on dbt v1 from the `main-v1` branch, whose TESTING.md has the dbt v1 commands. The Databricks, BigQuery, and Redshift models are in beta and have their own data tests. Their unit tests are planned.
 
 ---
 
@@ -32,7 +32,7 @@ Every unit test and macro test has been checked to **fail** when the logic it co
 
 ## 2. Before you start
 
-- **dbt v2.** The package is tested on dbt v2. dbt v1 isn't supported yet.
+- **dbt v2.** This branch is tested on dbt v2. For dbt v1, see the `main-v1` branch.
 - **A Snowflake role that can read `SNOWFLAKE.ACCOUNT_USAGE`** (`IMPORTED PRIVILEGES` on the `SNOWFLAKE` database), plus a warehouse.
 - **A dedicated test schema.** Setting up unit tests builds tables (mostly empty) in it. Because the package sets `+schema: dbt_cost_optimization`, models land in `<your target schema>_dbt_cost_optimization`.
 - **A dbt profile target** for this repo's profile, `dbt_cost_optimization`, in `~/.dbt/profiles.yml`. Key-pair authentication works well for repeated test runs:
@@ -213,7 +213,6 @@ A failing unit test prints a row-by-row diff, with `expected -> actual` for each
 | **Post-hooks against real `SHOW WAREHOUSES` settings** | The integration tests run every hook, but fixture warehouses don't exist in the account, so the multi-cluster settings come from a simulated `SHOW WAREHOUSES` hook (`integration_tests/snowflake/macros/simulate_show_warehouses.sql`). Check the real path manually (see the checklist below). |
 | **The 7 `dbt run-operation` commands** | Manual: they query `SNOWFLAKE.ACCOUNT_USAGE` directly, so test inputs can't reach them (see the checklist below). |
 | **Databricks, BigQuery, Redshift** | Data tests only, for now |
-| **dbt v1** | Not supported yet |
 
 Planned: CI that runs `dbt parse` on every platform.
 

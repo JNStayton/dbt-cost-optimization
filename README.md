@@ -1,5 +1,7 @@
 # dbt Cost Optimization Package
 
+> **This is the dbt v2 version of the package** (the dbt Fusion engine, `2.x.x` releases). Running dbt v1 (dbt-core)? Use the [`main-v1`](https://github.com/dbt-labs/dbt-cost-optimization/tree/main-v1) branch and the `1.x.x` releases instead.
+
 A dbt package that analyzes your data platform's compute, storage, and query patterns to identify optimization opportunities and produce actionable recommendations.
 
 ## Supported platforms
@@ -70,14 +72,14 @@ See each platform's docs for model details and configuration.
 
 ## Installation
 
-Requires dbt v2 (the dbt Fusion engine). dbt v1 support is planned; on dbt v1, `dbt deps` installs the package but the next command stops with a version error.
+Requires dbt v2 (the dbt Fusion engine). For dbt v1 (dbt-core 1.10 and later), use the `1.x.x` releases from the [`main-v1`](https://github.com/dbt-labs/dbt-cost-optimization/tree/main-v1) branch.
 
 Add to your `packages.yml`:
 
 ```yaml
 packages:
-  - git: "https://github.com/dbt-labs/dbt-cost-optimization.git"
-    revision: main
+  - package: dbt-labs/dbt_cost_optimization
+    version: [">=2.0.0", "<3.0.0"]
 ```
 
 Then run:
@@ -85,8 +87,6 @@ Then run:
 ```bash
 dbt deps
 ```
-
-Installation from the dbt package hub (`package:` / `version:`) is coming soon.
 
 ## Getting started
 
